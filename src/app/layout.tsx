@@ -1,11 +1,8 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import ErrorBoundaryClient from '@/components/ErrorBoundaryClient'
 import Navigation from '@/components/Navigation'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Telecom Plus S.A.S.',
@@ -19,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={inter.className}>
+      <body className="font-sans">
         <ErrorBoundaryClient>
           <AuthProvider>
             <Navigation />

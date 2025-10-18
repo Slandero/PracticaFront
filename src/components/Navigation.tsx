@@ -38,6 +38,12 @@ const Navigation: React.FC = () => {
                 Dashboard
               </button>
               <button
+                onClick={() => router.push('/services')}
+                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Servicios
+              </button>
+              <button
                 onClick={() => router.push('/contratos/nuevo')}
                 className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
               >

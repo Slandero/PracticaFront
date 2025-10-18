@@ -7,6 +7,7 @@ import { useServicioStore } from '@/store/serviceStore';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import ServiciosSelector from '@/components/ServiciosSelector';
 
 export default function ContratoNuevoPage() {
   const [formData, setFormData] = useState({
@@ -20,12 +21,22 @@ export default function ContratoNuevoPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { createContrato } = useContratoStore();
-  const { servicios, fetchServicios } = useServicioStore();
+  const { servicios, fetchServicios, isLoading: serviciosLoading, error: serviciosError } = useServicioStore();
   const router = useRouter();
 
+  // Cargar servicios al montar el componente
   useEffect(() => {
+    console.log('🔄 Iniciando carga de servicios...');
     fetchServicios();
-  }, [fetchServicios]);
+  }, []);
+
+  // Debug: Log cuando cambien los servicios
+  useEffect(() => {
+    console.log('📋 Servicios en el store:', servicios);
+    console.log('📊 Número de servicios:', servicios?.length || 0);
+    console.log('⏳ Cargando:', serviciosLoading);
+    console.log('❌ Error:', serviciosError);
+  }, [servicios, serviciosLoading, serviciosError]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -50,14 +61,33 @@ export default function ContratoNuevoPage() {
     setIsLoading(true);
 
     try {
+      // Validaciones
+      if (!formData.numero || !formData.fechaInicio || !formData.fechaFin) {
+        throw new Error('Todos los campos son obligatorios');
+      }
+
+      if (formData.servicios_ids.length === 0) {
+        throw new Error('Debes seleccionar al menos un servicio');
+      }
+
+      if (new Date(formData.fechaFin) <= new Date(formData.fechaInicio)) {
+        throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
+      }
+
+      console.log('Creando contrato con datos:', formData);
       await createContrato(formData);
+      console.log('Contrato creado exitosamente');
       router.push('/dashboard');
     } catch (err: any) {
+      console.error('Error al crear contrato:', err);
       setError(err.message || 'Error al crear contrato');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Asegurar que servicios sea un array
+  const serviciosArray = Array.isArray(servicios) ? servicios : [];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -128,40 +158,16 @@ export default function ContratoNuevoPage() {
                 Servicios
                 <span className="text-red-500 ml-1">*</span>
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {servicios.map((servicio) => (
-                  <div
-                    key={servicio._id}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      formData.servicios_ids.includes(servicio._id)
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                    onClick={() => handleServicioToggle(servicio._id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-gray-900">{servicio.nombre}</h3>
-                        <p className="text-sm text-gray-600">{servicio.descripcion}</p>
-                        <p className="text-sm font-medium text-blue-600">
-                          ${servicio.precio.toLocaleString()}
-                        </p>
-                      </div>
-                      <div className={`w-4 h-4 border-2 rounded ${
-                        formData.servicios_ids.includes(servicio._id)
-                          ? 'border-blue-500 bg-blue-500'
-                          : 'border-gray-300'
-                      }`}>
-                        {formData.servicios_ids.includes(servicio._id) && (
-                          <div className="w-full h-full bg-white rounded-sm flex items-center justify-center">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              
+              <ServiciosSelector
+                servicios={serviciosArray}
+                serviciosSeleccionados={formData.servicios_ids}
+                onToggleServicio={handleServicioToggle}
+                isLoading={serviciosLoading}
+                error={serviciosError}
+                onRecargar={() => fetchServicios()}
+                onCreateServicio={() => router.push('/services/nuevo')}
+              />
             </div>
 
             <div className="flex justify-end space-x-4">

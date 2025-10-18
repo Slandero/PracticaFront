@@ -53,6 +53,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Función para obtener cookie
+  const getCookie = (name: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+  };
+
+  // Función para establecer cookie
+  const setCookie = (name: string, value: string, days: number = 7) => {
+    if (typeof window === 'undefined') return;
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+  };
+
+  // Función para eliminar cookie
+  const deleteCookie = (name: string) => {
+    if (typeof window === 'undefined') return;
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+  };
+
   // Verificar si hay un token válido al cargar la aplicación
   useEffect(() => {
     const checkAuth = async () => {
@@ -61,8 +84,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
       
-      const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
+      const storedToken = getCookie('token');
+      const storedUser = getCookie('user');
 
       if (storedToken && storedUser) {
         try {
@@ -73,18 +96,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (decodedToken.exp > currentTime) {
             setToken(storedToken);
             setUser(JSON.parse(storedUser));
-            console.log('Usuario autenticado desde localStorage:', JSON.parse(storedUser));
+            console.log('Usuario autenticado desde cookies:', JSON.parse(storedUser));
           } else {
-            // Token expirado, limpiar localStorage
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            console.log('Token expirado, limpiando localStorage');
+            // Token expirado, limpiar cookies
+            deleteCookie('token');
+            deleteCookie('user');
+            console.log('Token expirado, limpiando cookies');
           }
         } catch (error) {
-          // Token inválido, limpiar localStorage
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          console.log('Token inválido, limpiando localStorage');
+          // Token inválido, limpiar cookies
+          deleteCookie('token');
+          deleteCookie('user');
+          console.log('Token inválido, limpiando cookies');
         }
       }
       setIsLoading(false);
@@ -102,9 +125,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const { token: newToken, user } = response.data.data;
 
-      // Guardar en localStorage
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(user));
+      // Guardar en cookies
+      setCookie('token', newToken, 7); // 7 días de expiración
+      setCookie('user', JSON.stringify(user), 7);
 
       // Actualizar estado
       setToken(newToken);
@@ -127,9 +150,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const { token: newToken, user } = response.data.data;
 
-      // Guardar en localStorage
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(user));
+      // Guardar en cookies
+      setCookie('token', newToken, 7); // 7 días de expiración
+      setCookie('user', JSON.stringify(user), 7);
 
       // Actualizar estado
       setToken(newToken);
@@ -153,8 +176,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     console.log('Cerrando sesión');
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      deleteCookie('token');
+      deleteCookie('user');
     }
     setToken(null);
     setUser(null);

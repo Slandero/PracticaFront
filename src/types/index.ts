@@ -14,7 +14,7 @@ export interface Usuario {
     nombre: string;
     descripcion: string;
     precio: number;
-    tipo: 'Internet' | 'Television';
+    tipo: 'Internet' | 'Televisión';
     createdAt: string;
     updatedAt: string;
   }
@@ -53,14 +53,14 @@ export interface Usuario {
     nombre: string;
     descripcion: string;
     precio: number;
-    tipo: 'Internet' | 'Television';
+    tipo: 'Internet' | 'Televisión';
   }
 
   export interface UpdateServicioRequest {
     nombre?: string;
     descripcion?: string;
     precio?: number;
-    tipo?: 'Internet' | 'Television';
+    tipo?: 'Internet' | 'Televisión';
   }
   
   export interface ApiResponse<T> {
