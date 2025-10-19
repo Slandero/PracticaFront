@@ -24,18 +24,12 @@ export const useServicioStore = create<ServicioState>((set, get) => ({
   error: null,
 
   fetchServicios: async (params) => {
-    console.log('🔄 fetchServicios: Iniciando con params:', params);
     set({ isLoading: true, error: null });
     try {
-      console.log('📡 fetchServicios: Llamando a la API...');
       const { servicios, pagination } = await servicioService.getServicios(params);
-      console.log('✅ fetchServicios: Servicios recibidos:', servicios);
-      console.log('📊 fetchServicios: Número de servicios:', servicios?.length || 0);
-      console.log('📄 fetchServicios: Paginación:', pagination);
       set({ servicios, pagination, isLoading: false });
-      console.log('💾 fetchServicios: Estado actualizado');
     } catch (error) {
-      console.error('❌ fetchServicios: Error:', error);
+      console.error('fetchServicios: Error:', error);
       set({
         error: (error as ApiError).message || 'Error al cargar servicios',
         isLoading: false
@@ -59,22 +53,20 @@ export const useServicioStore = create<ServicioState>((set, get) => ({
   },
 
   createServicio: async (servicioData: CreateServicioRequest) => {
-    console.log('🔄 createServicio: Iniciando...');
     set({ isLoading: true, error: null });
     try {
       const nuevoServicio = await servicioService.createServicio(servicioData);
-      console.log('✅ createServicio: Servicio creado:', nuevoServicio);
+      console.log('createServicio: Servicio creado:', nuevoServicio);
       set(state => {
         const serviciosActuales = Array.isArray(state.servicios) ? state.servicios : [];
         const nuevosServicios = [...serviciosActuales, nuevoServicio];
-        console.log('💾 createServicio: Actualizando estado con', nuevosServicios.length, 'servicios');
         return {
           servicios: nuevosServicios,
           isLoading: false
         };
       });
     } catch (error) {
-      console.error('❌ createServicio: Error:', error);
+      console.error('createServicio: Error:', error);
       set({ 
         error: (error as ApiError).message || 'Error al crear servicio',
         isLoading: false 

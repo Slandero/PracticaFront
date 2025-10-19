@@ -40,38 +40,19 @@ export const contratoService = {
  
   async getContratoById(id: string): Promise<Contrato> {
   const response = await api.get<ApiResponse<Contrato>>(`/contracts/${id}?populate=servicios`);
-  console.log('📋 Contrato obtenido con servicios:', response.data.data);
+  console.log('Contrato obtenido con servicios:', response.data.data);
   return response.data.data;
 },
 
   async createContrato(contratoData: CreateContratoRequest): Promise<Contrato> {
-    console.log('📤 Enviando contrato a: /contracts');
-    console.log('📋 Datos del contrato:', JSON.stringify(contratoData, null, 2));
+    console.log('Enviando contrato a: /contracts');
+    console.log('Datos del contrato:', JSON.stringify(contratoData, null, 2));
     
     try {
       const response = await api.post<ApiResponse<Contrato>>('/contracts', contratoData);
-      console.log('✅ Respuesta del backend:', response.data);
       return response.data.data;
     } catch (error: any) {
-      console.error('❌ Error completo del backend:', error.response?.data);
-      console.error('📊 Status:', error.response?.status);
-      console.error('📝 Headers:', error.response?.headers);
-      console.error('🔍 URL completa:', error.config?.url);
-      console.error('📤 Datos enviados:', error.config?.data);
-      
-      // MOSTRAR LA ESTRUCTURA COMPLETA DE LOS ERRORES
-      if (error.response?.data?.errors) {
-        console.error('🚨 ERRORES ESPECÍFICOS DEL BACKEND:');
-        console.error('📋 Estructura completa de errores:', JSON.stringify(error.response.data.errors, null, 2));
-        
-        error.response.data.errors.forEach((err: any, index: number) => {
-          console.error(`   ${index + 1}. Error completo:`, err);
-          console.error(`      Tipo:`, typeof err);
-          console.error(`      Claves:`, Object.keys(err || {}));
-          console.error('   ---');
-        });
-      }
-      
+ 
       throw error;
     }
   },

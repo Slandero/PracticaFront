@@ -33,7 +33,6 @@ interface AuthContextType {
 // Crear el contexto
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Hook personalizado para usar el contexto
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -113,16 +112,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
                 setToken(storedToken);
                 setUser(user); // Usar los datos mapeados
-                console.log('✅ Usuario autenticado y validado con backend:', user);
+                console.log('Usuario autenticado:', user);
               } else {
                 // Token no válido en backend
                 deleteCookie('token');
                 deleteCookie('user');
-                console.log('❌ Token no válido en backend, limpiando cookies');
+                console.log('Token no válido, limpiando cookies');
               }
             } catch (error) {
               // Error al validar con backend (token no activo o error de red)
-              console.log('❌ Error al validar token con backend:', error);
+              console.log('Error al validar token:', error);
               deleteCookie('token');
               deleteCookie('user');
             }
@@ -130,13 +129,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Token expirado localmente
             deleteCookie('token');
             deleteCookie('user');
-            console.log('⏰ Token expirado localmente, limpiando cookies');
+            console.log('Token expirado localmente, limpiando cookies');
           }
         } catch (error) {
           // Token inválido o error al decodificar
           deleteCookie('token');
           deleteCookie('user');
-          console.log('❌ Token inválido, limpiando cookies:', error);
+          console.log('Token inválido, limpiando cookies:', error);
         }
       }
       setIsLoading(false);
@@ -148,7 +147,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Función de login
   const login = async (email: string, password: string) => {
     try {
-      console.log('Iniciando login para:', email);
+      console.log('Iniciando login', email);
       const response = await api.post('/auth/login', { email, password });
       console.log('Respuesta del login:', response.data);
 
@@ -181,10 +180,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (nombre: string, email: string, password: string) => {
     try {
       const data = { nombre, email, password };
-      console.log('Enviando datos de registro:', data);
 
       const response = await api.post('/auth/register', data);
-      console.log('Respuesta del registro:', response.data);
 
       const { token: newToken, user: backendUser } = response.data.data;
 
@@ -207,11 +204,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Registro exitoso, usuario:', user);
     } catch (error: any) {
       console.error('Error en registro:', error.response?.data);
-      console.error('Errores específicos:', error.response?.data?.errors);
 
       if (error.response?.data?.errors) {
         error.response.data.errors.forEach((err: any, index: number) => {
-          console.error(`Error ${index + 1}:`, err);
         });
       }
 
@@ -221,15 +216,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Función de logout
   const logout = async () => {
-    console.log('🚪 Cerrando sesión');
+    console.log('Cerrando sesión');
 
     // Intentar notificar al backend sobre el logout
     try {
       await api.post('/auth/logout');
-      console.log('✅ Logout exitoso en el backend');
     } catch (error) {
       // Continuar con el logout local aunque falle el backend
-      console.log('⚠️ Error al hacer logout en el backend, continuando con logout local:', error);
     }
 
     // Limpiar estado local y cookies

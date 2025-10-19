@@ -1,15 +1,11 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-// Configuración base de la API
-const API_BASE_URL = 'http://localhost:8000/api'; // Ajusta según tu puerto del backend
+const API_BASE_URL = 'http://localhost:8000/api'; 
 
-// Para debug - verificar la URL
-console.log('API Base URL:', API_BASE_URL);
 
-// Interfaz para el token JWT decodificado
 interface DecodedToken {
-  id: string;        // Cambiar de userId a id
+  id: string;        
   email: string;
   iat: number;
   exp: number;
@@ -44,7 +40,7 @@ api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
       const token = getCookie('token');
-      console.log('🔑 Token encontrado:', token ? 'Sí' : 'No');
+      console.log('Token encontrado:', token ? 'Sí' : 'No');
 
       if (token) {
         // Verificar si el token no ha expirado
@@ -52,12 +48,8 @@ api.interceptors.request.use(
           const decodedToken = jwtDecode<DecodedToken>(token);
           const currentTime = Date.now() / 1000;
 
-          console.log('⏰ Token expira en:', new Date(decodedToken.exp * 1000));
-          console.log('🕐 Tiempo actual:', new Date());
-          console.log('👤 Usuario ID:', decodedToken.id);
-
           if (decodedToken.exp < currentTime) {
-            console.log('❌ Token expirado');
+            console.log('Token expirado');
             deleteCookie('token');
             deleteCookie('user');
             window.location.href = '/login';
@@ -65,21 +57,20 @@ api.interceptors.request.use(
           }
 
           config.headers.Authorization = `Bearer ${token}`;
-          console.log('✅ Token agregado a la request');
         } catch (error) {
-          console.log('❌ Token inválido:', error);
+          console.log('Token inválido:', error);
           deleteCookie('token');
           deleteCookie('user');
           window.location.href = '/login';
         }
       } else {
-        console.log('⚠️ No hay token disponible');
+        console.log('No hay token disponible');
       }
     }
     return config;
   },
   (error) => {
-    console.error('❌ Error en interceptor de request:', error);
+    console.error('Error en interceptor de request:', error);
     return Promise.reject(error);
   }
 );
@@ -87,15 +78,11 @@ api.interceptors.request.use(
 // Interceptor para manejar respuestas y errores
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log('✅ Respuesta exitosa:', response.status, response.config.url);
     return response;
   },
   (error) => {
-    console.error('❌ Error en respuesta:', error.response?.status, error.config?.url);
-    console.error('📋 Datos del error:', error.response?.data);
 
     if (error.response?.status === 401) {
-      console.log('🔒 Token expirado o inválido - limpiando cookies y redirigiendo a login');
       // Token expirado o inválido - limpiar cookies
       if (typeof window !== 'undefined') {
         deleteCookie('token');

@@ -6,7 +6,7 @@ import { useContratoStore } from '@/store/contratoStore';
 import { useServicioStore } from '@/store/serviceStore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 

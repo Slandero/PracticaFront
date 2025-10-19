@@ -1,4 +1,9 @@
 {
+  "/not-found": "app/not-found.js",
+  "/contratos/page": "app/contratos/page.js",
+  "/contratos/[id]/editar/page": "app/contratos/[id]/editar/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/contratos/nuevo/page": "app/contratos/nuevo/page.js",
+  "/services/[id]/page": "app/services/[id]/page.js",
   "/contratos/[id]/page": "app/contratos/[id]/page.js"
 }

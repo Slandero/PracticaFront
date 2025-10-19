@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,7 +18,6 @@ export default function LoginPage() {
 
   // Redirigir si ya está autenticado
   useEffect(() => {
-    console.log('LoginPage - Estado de autenticación:', { isAuthenticated, authLoading });
     if (!authLoading && isAuthenticated) {
       console.log('Usuario ya autenticado, redirigiendo a dashboard');
       router.push('/dashboard');
@@ -59,7 +58,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      console.log('Login exitoso, redirigiendo...');
+      console.log('Login exitoso');
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión');

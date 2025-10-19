@@ -22,7 +22,6 @@ export const servicioService = {
     const response = await api.get(url);
     console.log('Response getServicios:', response.data);
 
-    // El backend devuelve: { success: true, data: { services: [...], pagination: {...} } }
     const servicios = response.data.data?.services || response.data.services || response.data.data || response.data || [];
     const pagination = response.data.data?.pagination || {
       currentPage: 1,
@@ -34,7 +33,6 @@ export const servicioService = {
     };
 
     console.log('Servicios extraídos:', servicios);
-    console.log('Tipo de servicios:', typeof servicios, Array.isArray(servicios));
 
     return { servicios, pagination };
   },
@@ -46,7 +44,6 @@ export const servicioService = {
   },
 
   async createServicio(servicioData: CreateServicioRequest): Promise<Servicio> {
-    console.log('Enviando datos al backend:', servicioData);
     
     try {
       const response = await api.post('/services', {

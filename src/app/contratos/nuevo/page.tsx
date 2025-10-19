@@ -6,16 +6,16 @@ import { useAuth } from '@/context/AuthContext';
 import { useContratoStore } from '@/store/contratoStore';
 import { useServicioStore } from '@/store/serviceStore';
 import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import ServiciosSelector from '@/components/ServiciosSelector';
+import ServiciosSelector from '@/components/ServicioSelector';
 
 export default function ContratoNuevoPage() {
   const [formData, setFormData] = useState({
-    numeroContrato: '', // Cambiar de 'numero' a 'numeroContrato'
+    numeroContrato: '', 
     fechaInicio: '',
     fechaFin: '',
     estado: 'Activo' as 'Activo' | 'Inactivo' | 'Suspendido' | 'Cancelado',
@@ -31,16 +31,13 @@ export default function ContratoNuevoPage() {
 
   // Cargar servicios al montar el componente
   useEffect(() => {
-    console.log('🔄 Iniciando carga de servicios...');
+    console.log('Iniciando carga de servicios');
     fetchServicios();
   }, []);
 
   // Debug: Log cuando cambien los servicios
   useEffect(() => {
-    console.log('📋 Servicios en el store:', servicios);
-    console.log('📊 Número de servicios:', servicios?.length || 0);
-    console.log('⏳ Cargando:', serviciosLoading);
-    console.log('❌ Error:', serviciosError);
+    console.log(' Número de servicios:', servicios?.length || 0);
   }, [servicios, serviciosLoading, serviciosError]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -112,14 +109,9 @@ export default function ContratoNuevoPage() {
         usuario_id: user.id
       };
 
-      console.log('📤 Creando contrato con datos:', contratoData);
-      console.log('👤 Usuario ID:', user.id);
-      console.log('📅 Fecha inicio (ISO):', contratoData.fechaInicio);
-      console.log('📅 Fecha fin (ISO):', contratoData.fechaFin);
-      console.log('🔢 Servicios seleccionados:', formData.servicios_ids);
       
       await createContrato(contratoData);
-      console.log('✅ Contrato creado exitosamente');
+      console.log('Contrato creado exitosamente');
       
       // Recargar la lista de contratos para asegurar que se actualice
       await fetchContratos();
@@ -127,10 +119,8 @@ export default function ContratoNuevoPage() {
       
       router.push('/dashboard');
     } catch (err: any) {
-      console.error('❌ Error al crear contrato:', err);
-      console.error('📋 Detalles del error:', err.response?.data);
-      console.error('📊 Status del error:', err.response?.status);
-      console.error('📝 Mensaje del error:', err.response?.data?.message);
+      console.error('Error al crear contrato:', err);
+
       
       // MOSTRAR ERRORES ESPECÍFICOS DEL BACKEND
       let errorMessage = err.message || 'Error al crear contrato';
@@ -243,7 +233,7 @@ export default function ContratoNuevoPage() {
 
               <div className="space-y-4">
                 <Label>Servicios</Label>
-                <ServiciosSelector
+                {serviciosArray.length > 0 && <ServiciosSelector
                   servicios={serviciosArray}
                   serviciosSeleccionados={formData.servicios_ids}
                   onToggleServicio={handleServicioToggle}
@@ -251,7 +241,7 @@ export default function ContratoNuevoPage() {
                   error={serviciosError}
                   onRecargar={() => fetchServicios()}
                   onCreateServicio={() => router.push('/services/nuevo')}
-                />
+                />}
               </div>
 
               <div className="flex justify-end space-x-4">

@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useServicioStore } from '@/store/serviceStore';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,7 +15,7 @@ export default function ServicioNuevoPage() {
     nombre: '',
     descripcion: '',
     precio: '',
-    tipo: 'Internet' as 'Internet' | 'Televisión', // Cambiar a "Televisión"
+    tipo: 'Internet' as 'Internet' | 'Televisión', 
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +37,6 @@ export default function ServicioNuevoPage() {
     setIsLoading(true);
 
     try {
-      // Validar datos según las reglas del backend
       if (!formData.nombre || formData.nombre.length < 2 || formData.nombre.length > 100) {
         throw new Error('El nombre debe tener entre 2 y 100 caracteres');
       }
@@ -139,7 +138,7 @@ export default function ServicioNuevoPage() {
                 <div className="space-y-2">
                   <Label htmlFor="tipo">Tipo de Servicio</Label>
                   <Select
-                    name="tipo"
+                    name="tipo" 
                     value={formData.tipo}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, tipo: value as 'Internet' | 'Televisión' }))}
                   >
@@ -148,7 +147,7 @@ export default function ServicioNuevoPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Internet">Internet</SelectItem>
-                      <SelectItem value="Television">Televisión</SelectItem>
+                      <SelectItem value="Televisión">Televisión</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

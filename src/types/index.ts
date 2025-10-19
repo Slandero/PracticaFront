@@ -18,7 +18,7 @@ export interface Servicio {
 
 export interface Contrato {
   _id: string;
-  numeroContrato: string; // Cambiar de 'numero' a 'numeroContrato'
+  numeroContrato: string; 
   fechaInicio: string;
   fechaFin: string;
   estado: 'Activo' | 'Inactivo' | 'Suspendido' | 'Cancelado';
@@ -31,7 +31,7 @@ export interface Contrato {
 }
 
 export interface CreateContratoRequest {
-  numeroContrato: string; // Cambiar de 'numero' a 'numeroContrato'
+  numeroContrato: string; 
   fechaInicio: string;
   fechaFin: string;
   estado: 'Activo' | 'Inactivo' | 'Suspendido' | 'Cancelado';
@@ -40,7 +40,7 @@ export interface CreateContratoRequest {
 }
 
 export interface UpdateContratoRequest {
-  numeroContrato?: string; // Cambiar de 'numero' a 'numeroContrato'
+  numeroContrato?: string; 
   fechaInicio?: string;
   fechaFin?: string;
   estado?: 'Activo' | 'Inactivo' | 'Suspendido' | 'Cancelado';
@@ -79,8 +79,9 @@ export interface PaginationInfo {
 export interface PaginatedResponse<T> {
   success: boolean;
   data: {
-    [key: string]: T; // contracts, services, etc.
-    pagination: PaginationInfo;
+    contracts?: T[];
+    services?: T[];
+    pagination?: PaginationInfo;
   };
   message?: string;
 }

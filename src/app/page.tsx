@@ -9,7 +9,6 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('HomePage - Estado de autenticación:', { isAuthenticated, isLoading });
     if (!isLoading) {
       if (isAuthenticated) {
         console.log('Usuario autenticado, redirigiendo a dashboard');

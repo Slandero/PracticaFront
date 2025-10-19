@@ -3,7 +3,7 @@
 import { useContratoStore } from "@/store/contratoStore";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Plus, 
@@ -77,7 +77,6 @@ export default function ContratosPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>

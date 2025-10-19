@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useContratoStore } from '@/store/contratoStore';
 import { useServicioStore } from '@/store/serviceStore';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 
 interface PageParams {
@@ -38,38 +38,24 @@ export default function ContratoDetallePage() {
         const contratoData = await getContratoById(id);
         setContrato(contratoData);
         
-        console.log('📋 Contrato cargado:', contratoData);
-        console.log('🔢 Servicios IDs:', contratoData.servicios_ids);
-        console.log('📦 Servicios completos:', contratoData.servicios);
-        console.log('📦 Servicios completos del backend:', contratoData.servicios);
-        console.log('🏪 Servicios en el store:', serviciosStore);
+
         
         // Si el backend devuelve servicios poblados
         if (contratoData.servicios && Array.isArray(contratoData.servicios) && contratoData.servicios.length > 0) {
-        console.log('✅ Usando servicios poblados del backend')
           setServicios(contratoData.servicios);
         } 
         // Si solo tenemos IDs, buscar los servicios en el store
        else if (contratoData.servicios_ids && Array.isArray(contratoData.servicios_ids) && contratoData.servicios_ids.length > 0) {
-        console.log('🔍 Buscando servicios en el store por IDs...');
-        console.log('🏪 Servicios en el store:', serviciosStore);
-        console.log('🔢 Tipo de servicios_ids:', typeof contratoData.servicios_ids[0]);
-        console.log('🔢 Primer elemento:', contratoData.servicios_ids[0]);
         
         // Si servicios_ids contiene objetos, usar directamente
         if (typeof contratoData.servicios_ids[0] === 'object' && 'id' in contratoData.servicios_ids[0]) {
-          console.log('✅ servicios_ids contiene objetos, usando directamente');
           setServicios(contratoData.servicios_ids);
         } else {
           // Si servicios_ids contiene strings, filtrar del store
-          console.log('✅ servicios_ids contiene strings, filtrando del store');
           setServicios(contratoData.servicios_ids);
         }
       } else {
-        console.log('⚠️ No se encontraron servicios ni IDs');
-        console.log('🔢 servicios_ids:', contratoData.servicios_ids);
-        console.log('🔢 Tipo de servicios_ids:', typeof contratoData.servicios_ids[0]);
-        console.log('🔢 Primer elemento:', contratoData.servicios_ids[0]);
+        console.log(' No se encontraron servicios ni IDs');
           setServicios([]);
         }
       } catch (err: any) {
@@ -170,7 +156,7 @@ export default function ContratoDetallePage() {
             </Card>
           </div>
 
-          {/* Servicios */}
+          
           <div>
             <Card title="Servicios">
               {servicios.length > 0 ? (
