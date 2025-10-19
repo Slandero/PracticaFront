@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { Contrato, CreateContratoRequest, UpdateContratoRequest, ApiError } from '../types';
-import { contratoService } from '../services/contratoSevice';
+import { contratoService } from '@/services/contratoSevice';
 
 interface ContratoState {
   contratos: Contrato[];
   isLoading: boolean;
   error: string | null;
-  
+
   fetchContratos: () => Promise<void>;
   getContratoById: (id: string) => Promise<Contrato>;
   createContrato: (contratoData: CreateContratoRequest) => Promise<void>;
@@ -14,6 +14,7 @@ interface ContratoState {
   deleteContrato: (id: string) => Promise<void>;
   getContratosByEstado: (estado: string) => Promise<Contrato[]>;
   getContratosProximosAVencer: () => Promise<Contrato[]>;
+
   clearError: () => void;
 }
 
@@ -25,9 +26,12 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
   fetchContratos: async () => {
     set({ isLoading: true, error: null });
     try {
+      console.log('🔄 Fetching contratos...');
       const contratos = await contratoService.getContratos();
+      console.log('✅ Contratos obtenidos:', contratos);
       set({ contratos, isLoading: false });
     } catch (error) {
+      console.error('❌ Error al cargar contratos:', error);
       set({ 
         error: (error as ApiError).message || 'Error al cargar contratos',
         isLoading: false 
@@ -38,10 +42,13 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
   getContratoById: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
+      console.log('🔄 Obteniendo contrato por ID:', id);
       const contrato = await contratoService.getContratoById(id);
+      console.log('✅ Contrato obtenido:', contrato);
       set({ isLoading: false });
       return contrato;
     } catch (error) {
+      console.error('❌ Error al obtener contrato:', error);
       set({ 
         error: (error as ApiError).message || 'Error al obtener contrato',
         isLoading: false 
@@ -53,12 +60,15 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
   createContrato: async (contratoData: CreateContratoRequest) => {
     set({ isLoading: true, error: null });
     try {
+      console.log('🔄 Creando contrato con datos:', contratoData);
       const nuevoContrato = await contratoService.createContrato(contratoData);
+      console.log('✅ Contrato creado exitosamente:', nuevoContrato);
       set(state => ({
         contratos: [...state.contratos, nuevoContrato],
         isLoading: false
       }));
     } catch (error) {
+      console.error('❌ Error al crear contrato:', error);
       set({ 
         error: (error as ApiError).message || 'Error al crear contrato',
         isLoading: false 
@@ -70,7 +80,9 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
   updateContrato: async (id: string, contratoData: UpdateContratoRequest) => {
     set({ isLoading: true, error: null });
     try {
+      console.log('🔄 Actualizando contrato:', id, contratoData);
       const contratoActualizado = await contratoService.updateContrato(id, contratoData);
+      console.log('✅ Contrato actualizado:', contratoActualizado);
       set(state => ({
         contratos: state.contratos.map(contrato => 
           contrato._id === id ? contratoActualizado : contrato
@@ -78,6 +90,7 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
+      console.error('❌ Error al actualizar contrato:', error);
       set({ 
         error: (error as ApiError).message || 'Error al actualizar contrato',
         isLoading: false 
@@ -89,12 +102,15 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
   deleteContrato: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
+      console.log('🔄 Eliminando contrato:', id);
       await contratoService.deleteContrato(id);
+      console.log('✅ Contrato eliminado exitosamente');
       set(state => ({
         contratos: state.contratos.filter(contrato => contrato._id !== id),
         isLoading: false
       }));
     } catch (error) {
+      console.error('❌ Error al eliminar contrato:', error);
       set({ 
         error: (error as ApiError).message || 'Error al eliminar contrato',
         isLoading: false 
@@ -106,10 +122,13 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
   getContratosByEstado: async (estado: string) => {
     set({ isLoading: true, error: null });
     try {
+      console.log('🔄 Obteniendo contratos por estado:', estado);
       const contratos = await contratoService.getContratosByEstado(estado);
+      console.log('✅ Contratos por estado obtenidos:', contratos);
       set({ isLoading: false });
       return contratos;
     } catch (error) {
+      console.error('❌ Error al obtener contratos por estado:', error);
       set({ 
         error: (error as ApiError).message || 'Error al obtener contratos por estado',
         isLoading: false 
@@ -121,10 +140,13 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
   getContratosProximosAVencer: async () => {
     set({ isLoading: true, error: null });
     try {
+      console.log('🔄 Obteniendo contratos próximos a vencer...');
       const contratos = await contratoService.getContratosProximosAVencer();
+      console.log('✅ Contratos próximos a vencer:', contratos);
       set({ isLoading: false });
       return contratos;
     } catch (error) {
+      console.error('❌ Error al obtener contratos próximos a vencer:', error);
       set({ 
         error: (error as ApiError).message || 'Error al obtener contratos próximos a vencer',
         isLoading: false 
@@ -135,5 +157,5 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
 
   clearError: () => {
     set({ error: null });
-  },
+  }
 }));

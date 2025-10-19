@@ -29,14 +29,20 @@ api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token');
+      console.log('🔑 Token encontrado:', token ? 'Sí' : 'No');
+      
       if (token) {
         // Verificar si el token no ha expirado
         try {
           const decodedToken = jwtDecode<DecodedToken>(token);
           const currentTime = Date.now() / 1000;
           
+          console.log('⏰ Token expira en:', new Date(decodedToken.exp * 1000));
+          console.log('🕐 Tiempo actual:', new Date());
+          console.log('👤 Usuario ID:', decodedToken.id);
+          
           if (decodedToken.exp < currentTime) {
-            // Token expirado, limpiar localStorage
+            console.log('❌ Token expirado');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/login';
@@ -44,17 +50,21 @@ api.interceptors.request.use(
           }
           
           config.headers.Authorization = `Bearer ${token}`;
+          console.log('✅ Token agregado a la request');
         } catch (error) {
-          // Token inválido, limpiar localStorage
+          console.log('❌ Token inválido:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           window.location.href = '/login';
         }
+      } else {
+        console.log('⚠️ No hay token disponible');
       }
     }
     return config;
   },
   (error) => {
+    console.error('❌ Error en interceptor de request:', error);
     return Promise.reject(error);
   }
 );
@@ -62,10 +72,15 @@ api.interceptors.request.use(
 // Interceptor para manejar respuestas y errores
 api.interceptors.response.use(
   (response: AxiosResponse) => {
+    console.log('✅ Respuesta exitosa:', response.status, response.config.url);
     return response;
   },
   (error) => {
+    console.error('❌ Error en respuesta:', error.response?.status, error.config?.url);
+    console.error('📋 Datos del error:', error.response?.data);
+    
     if (error.response?.status === 401) {
+      console.log('🔒 Token expirado o inválido - redirigiendo a login');
       // Token expirado o inválido
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');

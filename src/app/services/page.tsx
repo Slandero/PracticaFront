@@ -109,7 +109,7 @@ export default function ServiciosPage() {
                     <div className="flex space-x-2">
                       <Button
                         variant="secondary"
-                        onClick={() => router.push(`/services/${servicio._id}/editar`)}
+                        onClick={() => router.push(`/services/${servicio._id}`)}
                         className="flex-1 text-sm"
                       >
                         Editar

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { useContratoStore } from '@/store/contratoStore';
 import { useServicioStore } from '@/store/serviceStore';
 import Input from '@/components/ui/Input';
@@ -11,7 +12,7 @@ import ServiciosSelector from '@/components/ServiciosSelector';
 
 export default function ContratoNuevoPage() {
   const [formData, setFormData] = useState({
-    numero: '',
+    numeroContrato: '', // Cambiar de 'numero' a 'numeroContrato'
     fechaInicio: '',
     fechaFin: '',
     estado: 'Activo' as 'Activo' | 'Inactivo' | 'Suspendido' | 'Cancelado',
@@ -20,6 +21,7 @@ export default function ContratoNuevoPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const { user } = useAuth();
   const { createContrato } = useContratoStore();
   const { servicios, fetchServicios, isLoading: serviciosLoading, error: serviciosError } = useServicioStore();
   const router = useRouter();
@@ -62,7 +64,7 @@ export default function ContratoNuevoPage() {
 
     try {
       // Validaciones
-      if (!formData.numero || !formData.fechaInicio || !formData.fechaFin) {
+      if (!formData.numeroContrato || !formData.fechaInicio || !formData.fechaFin) {
         throw new Error('Todos los campos son obligatorios');
       }
 
@@ -74,13 +76,71 @@ export default function ContratoNuevoPage() {
         throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
       }
 
-      console.log('Creando contrato con datos:', formData);
-      await createContrato(formData);
-      console.log('Contrato creado exitosamente');
+      // Validar que la fecha de inicio no sea anterior a hoy
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0); // Resetear horas para comparar solo fechas
+      const fechaInicio = new Date(formData.fechaInicio);
+      
+      if (fechaInicio < hoy) {
+        throw new Error('La fecha de inicio no puede ser anterior a hoy');
+      }
+
+      // Validar formato del número de contrato
+      const numeroContratoRegex = /^[A-Z0-9-]+$/;
+      if (!numeroContratoRegex.test(formData.numeroContrato)) {
+        throw new Error('El número de contrato solo puede contener letras mayúsculas, números y guiones');
+      }
+
+      if (formData.numeroContrato.length < 3 || formData.numeroContrato.length > 20) {
+        throw new Error('El número de contrato debe tener entre 3 y 20 caracteres');
+      }
+
+      if (!user?.id) {
+        throw new Error('Usuario no autenticado');
+      }
+
+      // Preparar datos para el backend con la estructura correcta
+      const contratoData = {
+        numeroContrato: formData.numeroContrato.trim().toUpperCase(), // Convertir a mayúsculas
+        fechaInicio: new Date(formData.fechaInicio).toISOString(),
+        fechaFin: new Date(formData.fechaFin).toISOString(),
+        estado: formData.estado,
+        servicios_ids: formData.servicios_ids,
+        usuario_id: user.id
+      };
+
+      console.log('📤 Creando contrato con datos:', contratoData);
+      console.log('👤 Usuario ID:', user.id);
+      console.log('📅 Fecha inicio (ISO):', contratoData.fechaInicio);
+      console.log('📅 Fecha fin (ISO):', contratoData.fechaFin);
+      console.log('🔢 Servicios seleccionados:', formData.servicios_ids);
+      
+      await createContrato(contratoData);
+      console.log('✅ Contrato creado exitosamente');
       router.push('/dashboard');
     } catch (err: any) {
-      console.error('Error al crear contrato:', err);
-      setError(err.message || 'Error al crear contrato');
+      console.error('❌ Error al crear contrato:', err);
+      console.error('📋 Detalles del error:', err.response?.data);
+      console.error('📊 Status del error:', err.response?.status);
+      console.error('📝 Mensaje del error:', err.response?.data?.message);
+      
+      // MOSTRAR ERRORES ESPECÍFICOS DEL BACKEND
+      let errorMessage = err.message || 'Error al crear contrato';
+      
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        console.error('🔍 Estructura de errores:', JSON.stringify(err.response.data.errors, null, 2));
+        
+        const specificErrors = err.response.data.errors.map((error: any, index: number) => {
+          console.error(`Error ${index + 1}:`, error);
+          return `${error.path || 'Campo'}: ${error.msg || error.message || 'Error desconocido'}`;
+        }).join(', ');
+        
+        errorMessage = `Errores de validación: ${specificErrors}`;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -97,67 +157,73 @@ export default function ContratoNuevoPage() {
           <p className="mt-2 text-gray-600">Completa la información del contrato</p>
         </div>
 
-        <Card>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Número de Contrato"
-                type="text"
-                name="numero"
-                value={formData.numero}
-                onChange={handleInputChange}
-                required
-                placeholder="Ej: CONT-2024-001"
-              />
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Estado
-                  <span className="text-red-500 ml-1">*</span>
-                </label>
-                <select
-                  name="estado"
-                  value={formData.estado}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
-                  <option value="Suspendido">Suspendido</option>
-                  <option value="Cancelado">Cancelado</option>
-                </select>
-              </div>
-
-              <Input
-                label="Fecha de Inicio"
-                type="date"
-                name="fechaInicio"
-                value={formData.fechaInicio}
-                onChange={handleInputChange}
-                required
-              />
-
-              <Input
-                label="Fecha de Fin"
-                type="date"
-                name="fechaFin"
-                value={formData.fechaFin}
-                onChange={handleInputChange}
-                required
-              />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
             </div>
+          )}
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Servicios
-                <span className="text-red-500 ml-1">*</span>
-              </label>
+          <Card>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input
+                  label="Número de Contrato"
+                  type="text"
+                  name="numeroContrato" // Cambiar de 'numero' a 'numeroContrato'
+                  value={formData.numeroContrato}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Ej: CONT-2024-001"
+                  maxLength={20}
+                />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Estado
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <select
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                    <option value="Suspendido">Suspendido</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input
+                  label="Fecha de Inicio"
+                  type="date"
+                  name="fechaInicio"
+                  value={formData.fechaInicio}
+                  onChange={handleInputChange}
+                  required
+                  min={new Date().toISOString().split('T')[0]} // Fecha mínima: hoy
+                />
+
+                <Input
+                  label="Fecha de Fin"
+                  type="date"
+                  name="fechaFin"
+                  value={formData.fechaFin}
+                  onChange={handleInputChange}
+                  required
+                  min={formData.fechaInicio || new Date().toISOString().split('T')[0]} // Fecha mínima: fecha de inicio
+                />
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900">Servicios</h3>
               
               <ServiciosSelector
                 servicios={serviciosArray}
@@ -181,13 +247,13 @@ export default function ContratoNuevoPage() {
               <Button
                 type="submit"
                 loading={isLoading}
-                disabled={!formData.numero || !formData.fechaInicio || !formData.fechaFin || formData.servicios_ids.length === 0}
+                disabled={!formData.numeroContrato || !formData.fechaInicio || !formData.fechaFin || formData.servicios_ids.length === 0}
               >
                 Crear Contrato
               </Button>
             </div>
-          </form>
-        </Card>
+          </Card>
+        </form>
       </div>
     </div>
   );

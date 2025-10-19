@@ -1,7 +1,7 @@
 {
   "/dashboard/page": "app/dashboard/page.js",
-  "/servicios/page": "app/servicios/page.js",
-  "/servicios/nuevo/page": "app/servicios/nuevo/page.js",
+  "/services/page": "app/services/page.js",
+  "/contratos/nuevo/page": "app/contratos/nuevo/page.js",
   "/register/page": "app/register/page.js",
-  "/contratos/nuevo/page": "app/contratos/nuevo/page.js"
+  "/services/nuevo/page": "app/services/nuevo/page.js"
 }
