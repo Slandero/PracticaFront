@@ -4,9 +4,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useContratoStore } from "@/store/contratoStore";
 import { useServicioStore } from "@/store/serviceStore";
 import { useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { 
   FileText, 
   Settings, 

@@ -37,10 +37,12 @@ export const contratoService = {
     };
   },
 
+ 
   async getContratoById(id: string): Promise<Contrato> {
-    const response = await api.get<ApiResponse<Contrato>>(`/contracts/${id}`);
-    return response.data.data;
-  },
+  const response = await api.get<ApiResponse<Contrato>>(`/contracts/${id}?populate=servicios`);
+  console.log('📋 Contrato obtenido con servicios:', response.data.data);
+  return response.data.data;
+},
 
   async createContrato(contratoData: CreateContratoRequest): Promise<Contrato> {
     console.log('📤 Enviando contrato a: /contracts');

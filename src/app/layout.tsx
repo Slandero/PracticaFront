@@ -14,6 +14,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Limpiar sesión al iniciar la app
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
+
   return (
     <html lang="es">
       <body className="font-sans antialiased">

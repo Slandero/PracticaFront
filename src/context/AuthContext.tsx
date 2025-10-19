@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsLoading(false);
         return;
       }
-
+      
       const storedToken = getCookie('token');
       const storedUser = getCookie('user');
 

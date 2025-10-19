@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useContratoStore } from '@/store/contratoStore';
 import { useServicioStore } from '@/store/serviceStore';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 
 interface PageParams {
   id: string;
@@ -20,7 +20,8 @@ export default function ContratoDetallePage() {
   const [error, setError] = useState('');
 
   const { getContratoById } = useContratoStore();
-  const { fetchServicios } = useServicioStore();
+ 
+  const { servicios: serviciosStore, fetchServicios } = useServicioStore();
   const [contrato, setContrato] = useState<any>(null);
   const [servicios, setServicios] = useState<any[]>([]);
 
@@ -37,9 +38,39 @@ export default function ContratoDetallePage() {
         const contratoData = await getContratoById(id);
         setContrato(contratoData);
         
-        // Obtener servicios del contrato
-        if (contratoData.servicios) {
+        console.log('📋 Contrato cargado:', contratoData);
+        console.log('🔢 Servicios IDs:', contratoData.servicios_ids);
+        console.log('📦 Servicios completos:', contratoData.servicios);
+        console.log('📦 Servicios completos del backend:', contratoData.servicios);
+        console.log('🏪 Servicios en el store:', serviciosStore);
+        
+        // Si el backend devuelve servicios poblados
+        if (contratoData.servicios && Array.isArray(contratoData.servicios) && contratoData.servicios.length > 0) {
+        console.log('✅ Usando servicios poblados del backend')
           setServicios(contratoData.servicios);
+        } 
+        // Si solo tenemos IDs, buscar los servicios en el store
+       else if (contratoData.servicios_ids && Array.isArray(contratoData.servicios_ids) && contratoData.servicios_ids.length > 0) {
+        console.log('🔍 Buscando servicios en el store por IDs...');
+        console.log('🏪 Servicios en el store:', serviciosStore);
+        console.log('🔢 Tipo de servicios_ids:', typeof contratoData.servicios_ids[0]);
+        console.log('🔢 Primer elemento:', contratoData.servicios_ids[0]);
+        
+        // Si servicios_ids contiene objetos, usar directamente
+        if (typeof contratoData.servicios_ids[0] === 'object' && 'id' in contratoData.servicios_ids[0]) {
+          console.log('✅ servicios_ids contiene objetos, usando directamente');
+          setServicios(contratoData.servicios_ids);
+        } else {
+          // Si servicios_ids contiene strings, filtrar del store
+          console.log('✅ servicios_ids contiene strings, filtrando del store');
+          setServicios(contratoData.servicios_ids);
+        }
+      } else {
+        console.log('⚠️ No se encontraron servicios ni IDs');
+        console.log('🔢 servicios_ids:', contratoData.servicios_ids);
+        console.log('🔢 Tipo de servicios_ids:', typeof contratoData.servicios_ids[0]);
+        console.log('🔢 Primer elemento:', contratoData.servicios_ids[0]);
+          setServicios([]);
         }
       } catch (err: any) {
         setError(err.message || 'Error al cargar datos');
@@ -47,13 +78,9 @@ export default function ContratoDetallePage() {
         setIsLoading(false);
       }
     };
-
+  
     loadData();
-  }, [id, getContratoById, fetchServicios]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES');
-  };
+  }, [id, getContratoById, fetchServicios, serviciosStore]);
 
   const getStatusColor = (estado: string) => {
     const colors = {
@@ -119,7 +146,7 @@ export default function ContratoDetallePage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Número de Contrato</label>
-                  <p className="mt-1 text-lg font-semibold text-gray-900">{contrato.numero}</p>
+                  <p className="mt-1 text-lg font-semibold text-gray-900">{contrato.numeroContrato}</p>
                 </div>
 
                 <div>
@@ -132,11 +159,11 @@ export default function ContratoDetallePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
-                    <p className="mt-1 text-gray-900">{formatDate(contrato.fechaInicio)}</p>
+                    <p className="mt-1 text-gray-900">{new Date(contrato.fechaInicio).toLocaleDateString()}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Fecha de Fin</label>
-                    <p className="mt-1 text-gray-900">{formatDate(contrato.fechaFin)}</p>
+                    <p className="mt-1 text-gray-900">{new Date(contrato.fechaFin).toLocaleDateString()}</p>
                   </div>
                 </div>
               </div>
