@@ -29,6 +29,9 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
       console.log('🔄 Fetching contratos...');
       const contratos = await contratoService.getContratos();
       console.log('✅ Contratos obtenidos:', contratos);
+      console.log('📊 Tipo de contratos:', typeof contratos);
+      console.log('📊 Es array:', Array.isArray(contratos));
+      console.log('📊 Cantidad:', contratos?.length || 0);
       set({ contratos, isLoading: false });
     } catch (error) {
       console.error('❌ Error al cargar contratos:', error);
@@ -63,10 +66,19 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
       console.log('🔄 Creando contrato con datos:', contratoData);
       const nuevoContrato = await contratoService.createContrato(contratoData);
       console.log('✅ Contrato creado exitosamente:', nuevoContrato);
-      set(state => ({
-        contratos: [...state.contratos, nuevoContrato],
-        isLoading: false
-      }));
+      
+      set(state => {
+        const contratosActuales = Array.isArray(state.contratos) ? state.contratos : [];
+        const nuevosContratos = [...contratosActuales, nuevoContrato];
+        console.log('📊 Estado anterior - contratos:', contratosActuales.length);
+        console.log('📊 Estado nuevo - contratos:', nuevosContratos.length);
+        console.log('📊 Nuevo contrato agregado:', nuevoContrato);
+        
+        return {
+          contratos: nuevosContratos,
+          isLoading: false
+        };
+      });
     } catch (error) {
       console.error('❌ Error al crear contrato:', error);
       set({ 
@@ -84,7 +96,7 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
       const contratoActualizado = await contratoService.updateContrato(id, contratoData);
       console.log('✅ Contrato actualizado:', contratoActualizado);
       set(state => ({
-        contratos: state.contratos.map(contrato => 
+        contratos: (Array.isArray(state.contratos) ? state.contratos : []).map(contrato => 
           contrato._id === id ? contratoActualizado : contrato
         ),
         isLoading: false
@@ -106,7 +118,7 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
       await contratoService.deleteContrato(id);
       console.log('✅ Contrato eliminado exitosamente');
       set(state => ({
-        contratos: state.contratos.filter(contrato => contrato._id !== id),
+        contratos: (Array.isArray(state.contratos) ? state.contratos : []).filter(contrato => contrato._id !== id),
         isLoading: false
       }));
     } catch (error) {

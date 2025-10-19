@@ -51,7 +51,7 @@ const ServiciosSelector: React.FC<ServiciosSelectorProps> = ({
   if (servicios.length === 0) {
     return (
       <div className="text-center py-8 border border-gray-300 rounded-lg">
-        <div className="text-gray-400 text-4xl mb-2">📡</div>
+        <div className="text-gray-400 text-4xl mb-2"></div>
         <p className="text-gray-600 mb-4">No hay servicios disponibles</p>
         <div className="space-x-4">
           {onRecargar && (

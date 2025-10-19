@@ -5,9 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useContratoStore } from '@/store/contratoStore';
 import { useServicioStore } from '@/store/serviceStore';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ServiciosSelector from '@/components/ServiciosSelector';
 
 export default function ContratoNuevoPage() {
@@ -22,7 +25,7 @@ export default function ContratoNuevoPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { user } = useAuth();
-  const { createContrato } = useContratoStore();
+  const { createContrato, fetchContratos } = useContratoStore();
   const { servicios, fetchServicios, isLoading: serviciosLoading, error: serviciosError } = useServicioStore();
   const router = useRouter();
 
@@ -117,6 +120,11 @@ export default function ContratoNuevoPage() {
       
       await createContrato(contratoData);
       console.log('✅ Contrato creado exitosamente');
+      
+      // Recargar la lista de contratos para asegurar que se actualice
+      await fetchContratos();
+      console.log('🔄 Lista de contratos recargada');
+      
       router.push('/dashboard');
     } catch (err: any) {
       console.error('❌ Error al crear contrato:', err);
@@ -150,110 +158,120 @@ export default function ContratoNuevoPage() {
   const serviciosArray = Array.isArray(servicios) ? servicios : [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Crear Nuevo Contrato</h1>
-          <p className="mt-2 text-gray-600">Completa la información del contrato</p>
+          <h1 className="text-3xl font-bold text-foreground">Crear Nuevo Contrato</h1>
+          <p className="mt-2 text-muted-foreground">Completa la información del contrato</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
+        <Card>
+          <CardHeader>
+            <CardTitle>Crear Contrato</CardTitle>
+            <CardDescription>Agrega un nuevo contrato al sistema</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
 
-          <Card>
-            <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input
-                  label="Número de Contrato"
-                  type="text"
-                  name="numeroContrato" // Cambiar de 'numero' a 'numeroContrato'
-                  value={formData.numeroContrato}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Ej: CONT-2024-001"
-                  maxLength={20}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="numeroContrato">Número de Contrato</Label>
+                  <Input
+                    id="numeroContrato"
+                    type="text"
+                    name="numeroContrato"
+                    value={formData.numeroContrato}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Ej: CONT-2024-001"
+                    maxLength={20}
+                  />
+                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Estado
-                    <span className="text-red-500 ml-1">*</span>
-                  </label>
-                  <select
+                <div className="space-y-2">
+                  <Label htmlFor="estado">Estado</Label>
+                  <Select
                     name="estado"
                     value={formData.estado}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, estado: value as 'Activo' | 'Inactivo' | 'Suspendido' | 'Cancelado' }))}
                   >
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                    <option value="Suspendido">Suspendido</option>
-                    <option value="Cancelado">Cancelado</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Activo">Activo</SelectItem>
+                      <SelectItem value="Inactivo">Inactivo</SelectItem>
+                      <SelectItem value="Suspendido">Suspendido</SelectItem>
+                      <SelectItem value="Cancelado">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input
-                  label="Fecha de Inicio"
-                  type="date"
-                  name="fechaInicio"
-                  value={formData.fechaInicio}
-                  onChange={handleInputChange}
-                  required
-                  min={new Date().toISOString().split('T')[0]} // Fecha mínima: hoy
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="fechaInicio">Fecha de Inicio</Label>
+                  <Input
+                    id="fechaInicio"
+                    type="date"
+                    name="fechaInicio"
+                    value={formData.fechaInicio}
+                    onChange={handleInputChange}
+                    required
+                    min={new Date().toISOString().split('T')[0]} // Fecha mínima: hoy
+                  />
+                </div>
 
-                <Input
-                  label="Fecha de Fin"
-                  type="date"
-                  name="fechaFin"
-                  value={formData.fechaFin}
-                  onChange={handleInputChange}
-                  required
-                  min={formData.fechaInicio || new Date().toISOString().split('T')[0]} // Fecha mínima: fecha de inicio
+                <div className="space-y-2">
+                  <Label htmlFor="fechaFin">Fecha de Fin</Label>
+                  <Input
+                    id="fechaFin"
+                    type="date"
+                    name="fechaFin"
+                    value={formData.fechaFin}
+                    onChange={handleInputChange}
+                    required
+                    min={formData.fechaInicio || new Date().toISOString().split('T')[0]} // Fecha mínima: fecha de inicio
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Label>Servicios</Label>
+                <ServiciosSelector
+                  servicios={serviciosArray}
+                  serviciosSeleccionados={formData.servicios_ids}
+                  onToggleServicio={handleServicioToggle}
+                  isLoading={serviciosLoading}
+                  error={serviciosError}
+                  onRecargar={() => fetchServicios()}
+                  onCreateServicio={() => router.push('/services/nuevo')}
                 />
               </div>
-            </div>
-          </Card>
 
-          <Card>
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">Servicios</h3>
-              
-              <ServiciosSelector
-                servicios={serviciosArray}
-                serviciosSeleccionados={formData.servicios_ids}
-                onToggleServicio={handleServicioToggle}
-                isLoading={serviciosLoading}
-                error={serviciosError}
-                onRecargar={() => fetchServicios()}
-                onCreateServicio={() => router.push('/services/nuevo')}
-              />
-            </div>
-
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => router.push('/dashboard')}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                loading={isLoading}
-                disabled={!formData.numeroContrato || !formData.fechaInicio || !formData.fechaFin || formData.servicios_ids.length === 0}
-              >
-                Crear Contrato
-              </Button>
-            </div>
-          </Card>
-        </form>
+              <div className="flex justify-end space-x-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push('/dashboard')}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!formData.numeroContrato || !formData.fechaInicio || !formData.fechaFin || formData.servicios_ids.length === 0 || isLoading}
+                >
+                  {isLoading ? "Creando..." : "Crear Contrato"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

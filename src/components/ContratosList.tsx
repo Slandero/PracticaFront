@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useContratoStore } from '@/store/contratoStore';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ContratosList: React.FC = () => {
   const { contratos, isLoading, error, deleteContrato } = useContratoStore();
@@ -95,7 +95,7 @@ const ContratosList: React.FC = () => {
               {contratos.map((contrato) => (
                 <tr key={contrato._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {contrato.numero}
+                    {contrato.numeroContrato}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(contrato.estado)}`}>

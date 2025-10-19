@@ -1,81 +1,97 @@
-'use client'
+'use client';
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import Button from './ui/Button';
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
+  Home, 
+  FileText, 
+  Settings, 
+  LogOut, 
+  User
+} from "lucide-react";
 
-const Navigation: React.FC = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+export default function Navigation() {
+  const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push("/login");
   };
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  const navigationItems = [
+    { href: "/dashboard", label: "Dashboard", icon: Home },
+    { href: "/contratos", label: "Contratos", icon: FileText },
+    { href: "/services", label: "Servicios", icon: Settings },
+  ];
 
   return (
-    <nav className="bg-white shadow-lg border-b">
+    <nav className="bg-white border-b-2 border-green-600 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <button 
-              onClick={() => router.push('/dashboard')} 
-              className="flex-shrink-0"
-            >
-              <h1 className="text-xl font-bold text-blue-600">Telecom Plus S.A.S.</h1>
-            </button>
-            
-            <div className="hidden md:ml-6 md:flex md:space-x-8">
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={() => router.push('/services')}
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Servicios
-              </button>
-              <button
-                onClick={() => router.push('/contratos/nuevo')}
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Nuevo Contrato
-              </button>
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link href="/dashboard" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">T+</span>
             </div>
+            <span className="hidden font-bold sm:inline-block text-green-600">
+              Telecom Plus
+            </span>
+          </Link>
+
+          {/* Navegación Centrada */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-green-600 text-white shadow-md"
+                      : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user?.nombre?.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <span className="text-gray-700 text-sm font-medium">
-                {user?.nombre}
-              </span>
-            </div>
-            
-            <Button
-              variant="secondary"
-              onClick={handleLogout}
-              className="text-sm"
-            >
-              Cerrar Sesión
-            </Button>
+          {/* User Section */}
+          <div className="flex items-center space-x-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center space-x-2">
+                  <div className="w-7 h-7 bg-green-600 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="font-medium text-gray-700">{user?.nombre || "Usuario"}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Cerrar Sesión
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
     </nav>
   );
-};
-
-export default Navigation;
+}

@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function RegisterPage() {
   const [nombre, setNombre] = useState('');
@@ -93,84 +93,108 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-blue-600">Telecom Plus S.A.S.</h1>
-          <h2 className="mt-6 text-2xl font-bold text-gray-900">
-            Crear Cuenta
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Regístrate para gestionar tus contratos de telecomunicaciones
+          <h1 className="text-3xl font-bold text-primary">Telecom Plus S.A.S.</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sistema de gestión de contratos
           </p>
         </div>
 
         <Card>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
+          <CardHeader>
+            <CardTitle>Crear Cuenta</CardTitle>
+            <CardDescription>
+              Regístrate para gestionar tus contratos de telecomunicaciones
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label htmlFor="nombre" className="text-sm font-medium">
+                  Nombre completo
+                </label>
+                <Input
+                  id="nombre"
+                  type="text"
+                  name="nombre"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  required
+                  placeholder="Tu nombre completo"
+                />
               </div>
-            )}
 
-            <Input
-              label="Nombre completo"
-              type="text"
-              name="nombre"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-              placeholder="Tu nombre completo"
-            />
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Correo electrónico
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="tu@email.com"
+                />
+              </div>
 
-            <Input
-              label="Correo electrónico"
-              type="email"
-              name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="tu@email.com"
-            />
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-sm font-medium">
+                  Contraseña
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Mínimo 6 caracteres"
+                />
+              </div>
 
-            <Input
-              label="Contraseña"
-              type="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Mínimo 6 caracteres"
-            />
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirmar contraseña
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  name="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Repite tu contraseña"
+                />
+              </div>
 
-            <Input
-              label="Confirmar contraseña"
-              type="password"
-              name="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              placeholder="Repite tu contraseña"
-            />
-
-            <Button
-              type="submit"
-              loading={isLoading}
-              disabled={!nombre || !email || !password || !confirmPassword}
-              className="w-full"
-            >
-              Crear Cuenta
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              ¿Ya tienes una cuenta?{' '}
-              <a
-                href="/login"
-                className="font-medium text-blue-600 hover:text-blue-500"
+              <Button
+                type="submit"
+                disabled={!nombre || !email || !password || !confirmPassword || isLoading}
+                className="w-full"
               >
-                Inicia sesión aquí
-              </a>
-            </p>
-          </div>
+                {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                ¿Ya tienes una cuenta?{' '}
+                <a
+                  href="/login"
+                  className="font-medium text-primary hover:text-primary/80"
+                >
+                  Inicia sesión aquí
+                </a>
+              </p>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>

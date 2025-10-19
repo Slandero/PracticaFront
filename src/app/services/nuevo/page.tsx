@@ -3,9 +3,12 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useServicioStore } from '@/store/serviceStore';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ServicioNuevoPage() {
   const [formData, setFormData] = useState({
@@ -73,92 +76,101 @@ export default function ServicioNuevoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 py-8">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Crear Nuevo Servicio</h1>
-          <p className="mt-2 text-gray-600">Completa la información del servicio</p>
+          <h1 className="text-3xl font-bold text-foreground">Crear Nuevo Servicio</h1>
+          <p className="mt-2 text-muted-foreground">Completa la información del servicio</p>
         </div>
 
         <Card>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+          <CardHeader>
+            <CardTitle>Crear Servicio</CardTitle>
+            <CardDescription>Agrega un nuevo servicio a tu catálogo</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
 
-            <Input
-              label="Nombre del Servicio"
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleInputChange}
-              required
-              placeholder="Ej: Internet 100 Mbps"
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Descripción
-                <span className="text-red-500 ml-1">*</span>
-              </label>
-              <textarea
-                name="descripcion"
-                value={formData.descripcion}
-                onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
-                required
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Describe las características del servicio (mínimo 10 caracteres)"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Precio"
-                type="number"
-                name="precio"
-                value={formData.precio}
-                onChange={handleInputChange}
-                required
-                placeholder="50000"
-              />
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de Servicio
-                  <span className="text-red-500 ml-1">*</span>
-                </label>
-                <select
-                  name="tipo"
-                  value={formData.tipo}
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre del Servicio</Label>
+                <Input
+                  id="nombre"
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Internet">Internet</option>
-                  <option value="Televisión">Televisión</option>
-                </select>
+                  required
+                  placeholder="Ej: Internet 100 Mbps"
+                />
               </div>
-            </div>
 
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => router.push('/services')}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                loading={isLoading}
-                disabled={!formData.nombre || !formData.descripcion || !formData.precio}
-              >
-                Crear Servicio
-              </Button>
-            </div>
-          </form>
+              <div className="space-y-2">
+                <Label htmlFor="descripcion">Descripción</Label>
+                <Textarea
+                  id="descripcion"
+                  name="descripcion"
+                  value={formData.descripcion}
+                  onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
+                  required
+                  rows={3}
+                  placeholder="Describe las características del servicio (mínimo 10 caracteres)"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="precio">Precio</Label>
+                  <Input
+                    id="precio"
+                    type="number"
+                    name="precio"
+                    value={formData.precio}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="50000"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tipo">Tipo de Servicio</Label>
+                  <Select
+                    name="tipo"
+                    value={formData.tipo}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, tipo: value as 'Internet' | 'Televisión' }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Internet">Internet</SelectItem>
+                      <SelectItem value="Television">Televisión</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push('/services')}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!formData.nombre || !formData.descripcion || !formData.precio || isLoading}
+                >
+                  {isLoading ? "Creando..." : "Crear Servicio"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
         </Card>
       </div>
     </div>
