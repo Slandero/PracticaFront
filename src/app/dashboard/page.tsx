@@ -20,14 +20,21 @@ import {
 } from "lucide-react";
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { contratos, fetchContratos, isLoading: contratosLoading } = useContratoStore();
   const { servicios, fetchServicios, isLoading: serviciosLoading } = useServicioStore();
 
   useEffect(() => {
-    fetchContratos();
-    fetchServicios();
-  }, [fetchContratos, fetchServicios]);
+    // Solo hacer fetch si el usuario está autenticado
+    if (isAuthenticated) {
+      fetchContratos().catch(error => {
+        console.error('Error al cargar contratos:', error);
+      });
+      fetchServicios().catch(error => {
+        console.error('Error al cargar servicios:', error);
+      });
+    }
+  }, [fetchContratos, fetchServicios, isAuthenticated]);
 
   const contratosArray = Array.isArray(contratos) ? contratos : [];
   const serviciosArray = Array.isArray(servicios) ? servicios : [];

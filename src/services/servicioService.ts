@@ -1,22 +1,42 @@
 import api from './api';
-import { 
-  Servicio, 
-  CreateServicioRequest, 
+import {
+  Servicio,
+  CreateServicioRequest,
   UpdateServicioRequest,
-  ApiResponse 
+  ApiResponse,
+  PaginationInfo
 } from '@/types';
 
 export const servicioService = {
-  async getServicios(): Promise<Servicio[]> {
-    const response = await api.get('/services');
+  async getServicios(params?: {
+    tipo?: 'Internet' | 'Televisión';
+    page?: number;
+    limit?: number
+  }): Promise<{ servicios: Servicio[]; pagination: PaginationInfo }> {
+    const queryParams = new URLSearchParams();
+    if (params?.tipo) queryParams.append('tipo', params.tipo);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const url = `/services${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await api.get(url);
     console.log('Response getServicios:', response.data);
-    
+
     // El backend devuelve: { success: true, data: { services: [...], pagination: {...} } }
-    // Necesitamos acceder a response.data.data.services
     const servicios = response.data.data?.services || response.data.services || response.data.data || response.data || [];
+    const pagination = response.data.data?.pagination || {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: servicios.length,
+      itemsPerPage: 10,
+      hasNextPage: false,
+      hasPrevPage: false
+    };
+
     console.log('Servicios extraídos:', servicios);
     console.log('Tipo de servicios:', typeof servicios, Array.isArray(servicios));
-    return servicios;
+
+    return { servicios, pagination };
   },
 
   async getServicioById(id: string): Promise<Servicio> {
@@ -76,12 +96,10 @@ export const servicioService = {
     await api.delete(`/services/${id}`);
   },
 
-  async getServiciosByTipo(tipo: 'Internet' | 'Televisión'): Promise<Servicio[]> {
-    const response = await api.get(`/services?tipo=${tipo}`);
-    console.log('Response getServiciosByTipo:', response.data);
-    
-    // El backend devuelve: { success: true, data: { services: [...], pagination: {...} } }
-    const servicios = response.data.data?.services || response.data.services || response.data.data || response.data || [];
-    return servicios;
+  async getServiciosByTipo(tipo: 'Internet' | 'Televisión', params?: {
+    page?: number;
+    limit?: number
+  }): Promise<{ servicios: Servicio[]; pagination: PaginationInfo }> {
+    return this.getServicios({ tipo, ...params });
   }
 };

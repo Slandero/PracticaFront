@@ -83,31 +83,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsLoading(false);
         return;
       }
-      
+
       const storedToken = getCookie('token');
       const storedUser = getCookie('user');
 
       if (storedToken && storedUser) {
         try {
-          // Verificar si el token no ha expirado
+          // Verificar si el token no ha expirado localmente
           const decodedToken = jwtDecode<DecodedToken>(storedToken);
           const currentTime = Date.now() / 1000;
 
           if (decodedToken.exp > currentTime) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-            console.log('Usuario autenticado desde cookies:', JSON.parse(storedUser));
+            // Token válido localmente, ahora verificar con el backend
+            try {
+              // Hacer una petición al perfil del usuario para validar el token
+              const response = await api.get('/auth/profile');
+
+              if (response.data.success && response.data.data) {
+                const backendUser = response.data.data;
+
+                // Mapear _id a id para compatibilidad
+                const user: User = {
+                  id: backendUser._id || backendUser.id,
+                  nombre: backendUser.nombre,
+                  email: backendUser.email,
+                  createdAt: backendUser.createdAt,
+                  updatedAt: backendUser.updatedAt
+                };
+
+                setToken(storedToken);
+                setUser(user); // Usar los datos mapeados
+                console.log('✅ Usuario autenticado y validado con backend:', user);
+              } else {
+                // Token no válido en backend
+                deleteCookie('token');
+                deleteCookie('user');
+                console.log('❌ Token no válido en backend, limpiando cookies');
+              }
+            } catch (error) {
+              // Error al validar con backend (token no activo o error de red)
+              console.log('❌ Error al validar token con backend:', error);
+              deleteCookie('token');
+              deleteCookie('user');
+            }
           } else {
-            // Token expirado, limpiar cookies
+            // Token expirado localmente
             deleteCookie('token');
             deleteCookie('user');
-            console.log('Token expirado, limpiando cookies');
+            console.log('⏰ Token expirado localmente, limpiando cookies');
           }
         } catch (error) {
-          // Token inválido, limpiar cookies
+          // Token inválido o error al decodificar
           deleteCookie('token');
           deleteCookie('user');
-          console.log('Token inválido, limpiando cookies');
+          console.log('❌ Token inválido, limpiando cookies:', error);
         }
       }
       setIsLoading(false);
@@ -122,8 +151,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Iniciando login para:', email);
       const response = await api.post('/auth/login', { email, password });
       console.log('Respuesta del login:', response.data);
-      
-      const { token: newToken, user } = response.data.data;
+
+      const { token: newToken, user: backendUser } = response.data.data;
+
+      // Mapear _id a id para compatibilidad
+      const user: User = {
+        id: backendUser._id || backendUser.id,
+        nombre: backendUser.nombre,
+        email: backendUser.email,
+        createdAt: backendUser.createdAt,
+        updatedAt: backendUser.updatedAt
+      };
 
       // Guardar en cookies
       setCookie('token', newToken, 7); // 7 días de expiración
@@ -144,11 +182,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const data = { nombre, email, password };
       console.log('Enviando datos de registro:', data);
-      
+
       const response = await api.post('/auth/register', data);
       console.log('Respuesta del registro:', response.data);
-      
-      const { token: newToken, user } = response.data.data;
+
+      const { token: newToken, user: backendUser } = response.data.data;
+
+      // Mapear _id a id para compatibilidad
+      const user: User = {
+        id: backendUser._id || backendUser.id,
+        nombre: backendUser.nombre,
+        email: backendUser.email,
+        createdAt: backendUser.createdAt,
+        updatedAt: backendUser.updatedAt
+      };
 
       // Guardar en cookies
       setCookie('token', newToken, 7); // 7 días de expiración
@@ -161,20 +208,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error: any) {
       console.error('Error en registro:', error.response?.data);
       console.error('Errores específicos:', error.response?.data?.errors);
-      
+
       if (error.response?.data?.errors) {
         error.response.data.errors.forEach((err: any, index: number) => {
           console.error(`Error ${index + 1}:`, err);
         });
       }
-      
+
       throw new Error(error.response?.data?.message || 'Error al registrarse');
     }
   };
 
   // Función de logout
-  const logout = () => {
-    console.log('Cerrando sesión');
+  const logout = async () => {
+    console.log('🚪 Cerrando sesión');
+
+    // Intentar notificar al backend sobre el logout
+    try {
+      await api.post('/auth/logout');
+      console.log('✅ Logout exitoso en el backend');
+    } catch (error) {
+      // Continuar con el logout local aunque falle el backend
+      console.log('⚠️ Error al hacer logout en el backend, continuando con logout local:', error);
+    }
+
+    // Limpiar estado local y cookies
     if (typeof window !== 'undefined') {
       deleteCookie('token');
       deleteCookie('user');

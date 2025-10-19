@@ -1,41 +1,44 @@
 import { create } from 'zustand';
-import { Servicio, CreateServicioRequest, UpdateServicioRequest, ApiError } from '../types';
+import { Servicio, CreateServicioRequest, UpdateServicioRequest, ApiError, PaginationInfo } from '../types';
 import { servicioService } from '../services/servicioService';
 
 interface ServicioState {
   servicios: Servicio[];
+  pagination: PaginationInfo | null;
   isLoading: boolean;
   error: string | null;
-  
-  fetchServicios: () => Promise<void>;
+
+  fetchServicios: (params?: { tipo?: 'Internet' | 'Televisión'; page?: number; limit?: number }) => Promise<void>;
   getServicioById: (id: string) => Promise<Servicio>;
   createServicio: (servicioData: CreateServicioRequest) => Promise<void>;
   updateServicio: (id: string, servicioData: UpdateServicioRequest) => Promise<void>;
   deleteServicio: (id: string) => Promise<void>;
-  getServiciosByTipo: (tipo: 'Internet' | 'Televisión') => Promise<Servicio[]>;
+  getServiciosByTipo: (tipo: 'Internet' | 'Televisión', params?: { page?: number; limit?: number }) => Promise<Servicio[]>;
   clearError: () => void;
 }
 
 export const useServicioStore = create<ServicioState>((set, get) => ({
   servicios: [],
+  pagination: null,
   isLoading: false,
   error: null,
 
-  fetchServicios: async () => {
-    console.log('🔄 fetchServicios: Iniciando...');
+  fetchServicios: async (params) => {
+    console.log('🔄 fetchServicios: Iniciando con params:', params);
     set({ isLoading: true, error: null });
     try {
       console.log('📡 fetchServicios: Llamando a la API...');
-      const servicios = await servicioService.getServicios();
+      const { servicios, pagination } = await servicioService.getServicios(params);
       console.log('✅ fetchServicios: Servicios recibidos:', servicios);
       console.log('📊 fetchServicios: Número de servicios:', servicios?.length || 0);
-      set({ servicios, isLoading: false });
+      console.log('📄 fetchServicios: Paginación:', pagination);
+      set({ servicios, pagination, isLoading: false });
       console.log('💾 fetchServicios: Estado actualizado');
     } catch (error) {
       console.error('❌ fetchServicios: Error:', error);
-      set({ 
+      set({
         error: (error as ApiError).message || 'Error al cargar servicios',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -122,16 +125,16 @@ export const useServicioStore = create<ServicioState>((set, get) => ({
     }
   },
 
-  getServiciosByTipo: async (tipo: 'Internet' | 'Televisión') => {
+  getServiciosByTipo: async (tipo: 'Internet' | 'Televisión', params) => {
     set({ isLoading: true, error: null });
     try {
-      const servicios = await servicioService.getServiciosByTipo(tipo);
-      set({ isLoading: false });
+      const { servicios, pagination } = await servicioService.getServiciosByTipo(tipo, params);
+      set({ pagination, isLoading: false });
       return servicios;
     } catch (error) {
-      set({ 
+      set({
         error: (error as ApiError).message || 'Error al obtener servicios por tipo',
-        isLoading: false 
+        isLoading: false
       });
       throw error;
     }

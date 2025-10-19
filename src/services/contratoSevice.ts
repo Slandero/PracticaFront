@@ -1,15 +1,40 @@
 import api from './api';
-import { 
-  Contrato, 
-  CreateContratoRequest, 
+import {
+  Contrato,
+  CreateContratoRequest,
   UpdateContratoRequest,
-  ApiResponse 
+  ApiResponse,
+  PaginatedResponse,
+  PaginationInfo,
+  ContractStats
 } from '@/types';
 
 export const contratoService = {
-  async getContratos(): Promise<Contrato[]> {
-    const response = await api.get<ApiResponse<Contrato[]>>('/contracts');
-    return response.data.data;
+  async getContratos(params?: {
+    estado?: string;
+    page?: number;
+    limit?: number
+  }): Promise<{ contratos: Contrato[]; pagination: PaginationInfo }> {
+    const queryParams = new URLSearchParams();
+    if (params?.estado) queryParams.append('estado', params.estado);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const url = `/contracts${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await api.get(url);
+
+    // El backend devuelve { success: true, data: { contracts: [...], pagination: {...} } }
+    return {
+      contratos: response.data.data?.contracts || response.data.data || [],
+      pagination: response.data.data?.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10,
+        hasNextPage: false,
+        hasPrevPage: false
+      }
+    };
   },
 
   async getContratoById(id: string): Promise<Contrato> {
@@ -58,13 +83,15 @@ export const contratoService = {
     await api.delete(`/contracts/${id}`);
   },
 
-  async getContratosByEstado(estado: string): Promise<Contrato[]> {
-    const response = await api.get<ApiResponse<Contrato[]>>(`/contracts?estado=${estado}`);
-    return response.data.data;
+  async getContratosByEstado(estado: string, params?: {
+    page?: number;
+    limit?: number
+  }): Promise<{ contratos: Contrato[]; pagination: PaginationInfo }> {
+    return this.getContratos({ estado, ...params });
   },
 
-  async getContratosProximosAVencer(): Promise<Contrato[]> {
-    const response = await api.get<ApiResponse<Contrato[]>>('/contracts/proximos-vencer');
+  async getContractStats(): Promise<ContractStats> {
+    const response = await api.get<ApiResponse<ContractStats>>('/contracts/stats');
     return response.data.data;
   }
 };

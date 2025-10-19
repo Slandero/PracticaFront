@@ -67,6 +67,30 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+export interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: {
+    [key: string]: T; // contracts, services, etc.
+    pagination: PaginationInfo;
+  };
+  message?: string;
+}
+
+export interface ContractStats {
+  totalContracts: number;
+  contractsByStatus: Array<{ _id: string; count: number }>;
+  contractsByServiceType: Array<{ _id: string; count: number }>;
+}
+
 export interface ApiError {
   message: string;
   status?: number;

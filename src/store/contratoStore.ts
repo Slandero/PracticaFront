@@ -1,43 +1,48 @@
 import { create } from 'zustand';
-import { Contrato, CreateContratoRequest, UpdateContratoRequest, ApiError } from '../types';
+import { Contrato, CreateContratoRequest, UpdateContratoRequest, ApiError, PaginationInfo, ContractStats } from '../types';
 import { contratoService } from '@/services/contratoSevice';
 
 interface ContratoState {
   contratos: Contrato[];
+  pagination: PaginationInfo | null;
+  stats: ContractStats | null;
   isLoading: boolean;
   error: string | null;
 
-  fetchContratos: () => Promise<void>;
+  fetchContratos: (params?: { estado?: string; page?: number; limit?: number }) => Promise<void>;
   getContratoById: (id: string) => Promise<Contrato>;
   createContrato: (contratoData: CreateContratoRequest) => Promise<void>;
   updateContrato: (id: string, contratoData: UpdateContratoRequest) => Promise<void>;
   deleteContrato: (id: string) => Promise<void>;
-  getContratosByEstado: (estado: string) => Promise<Contrato[]>;
-  getContratosProximosAVencer: () => Promise<Contrato[]>;
+  getContratosByEstado: (estado: string, params?: { page?: number; limit?: number }) => Promise<Contrato[]>;
+  fetchContractStats: () => Promise<void>;
 
   clearError: () => void;
 }
 
 export const useContratoStore = create<ContratoState>((set, get) => ({
   contratos: [],
+  pagination: null,
+  stats: null,
   isLoading: false,
   error: null,
 
-  fetchContratos: async () => {
+  fetchContratos: async (params) => {
     set({ isLoading: true, error: null });
     try {
-      console.log('🔄 Fetching contratos...');
-      const contratos = await contratoService.getContratos();
+      console.log('🔄 Fetching contratos with params:', params);
+      const { contratos, pagination } = await contratoService.getContratos(params);
       console.log('✅ Contratos obtenidos:', contratos);
       console.log('📊 Tipo de contratos:', typeof contratos);
       console.log('📊 Es array:', Array.isArray(contratos));
       console.log('📊 Cantidad:', contratos?.length || 0);
-      set({ contratos, isLoading: false });
+      console.log('📄 Paginación:', pagination);
+      set({ contratos, pagination, isLoading: false });
     } catch (error) {
       console.error('❌ Error al cargar contratos:', error);
-      set({ 
+      set({
         error: (error as ApiError).message || 'Error al cargar contratos',
-        isLoading: false 
+        isLoading: false
       });
     }
   },
@@ -131,37 +136,36 @@ export const useContratoStore = create<ContratoState>((set, get) => ({
     }
   },
 
-  getContratosByEstado: async (estado: string) => {
+  getContratosByEstado: async (estado: string, params) => {
     set({ isLoading: true, error: null });
     try {
       console.log('🔄 Obteniendo contratos por estado:', estado);
-      const contratos = await contratoService.getContratosByEstado(estado);
+      const { contratos, pagination } = await contratoService.getContratosByEstado(estado, params);
       console.log('✅ Contratos por estado obtenidos:', contratos);
-      set({ isLoading: false });
+      set({ pagination, isLoading: false });
       return contratos;
     } catch (error) {
       console.error('❌ Error al obtener contratos por estado:', error);
-      set({ 
+      set({
         error: (error as ApiError).message || 'Error al obtener contratos por estado',
-        isLoading: false 
+        isLoading: false
       });
       throw error;
     }
   },
 
-  getContratosProximosAVencer: async () => {
+  fetchContractStats: async () => {
     set({ isLoading: true, error: null });
     try {
-      console.log('🔄 Obteniendo contratos próximos a vencer...');
-      const contratos = await contratoService.getContratosProximosAVencer();
-      console.log('✅ Contratos próximos a vencer:', contratos);
-      set({ isLoading: false });
-      return contratos;
+      console.log('🔄 Obteniendo estadísticas de contratos...');
+      const stats = await contratoService.getContractStats();
+      console.log('✅ Estadísticas obtenidas:', stats);
+      set({ stats, isLoading: false });
     } catch (error) {
-      console.error('❌ Error al obtener contratos próximos a vencer:', error);
-      set({ 
-        error: (error as ApiError).message || 'Error al obtener contratos próximos a vencer',
-        isLoading: false 
+      console.error('❌ Error al obtener estadísticas:', error);
+      set({
+        error: (error as ApiError).message || 'Error al obtener estadísticas',
+        isLoading: false
       });
       throw error;
     }
